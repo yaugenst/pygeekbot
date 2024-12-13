@@ -1,0 +1,40 @@
+[project]
+name = "pygeekbot"
+version = "0.1.0"
+description = "Geekbot API Client"
+requires-python = ">=3.9,<3.13"
+dependencies = [
+    "backoff",
+    "httpx",
+    "msgspec",
+]
+
+[dependency-groups]
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]",
+    "mike",
+]
+tests = [
+    "ruff",
+    "pytest",
+    "respx",
+    "pytest-httpx",
+    "pytest-asyncio",
+    "pytest-cov",
+]
+dev = [
+    "pre-commit",
+    {include-group = "docs"},
+    {include-group = "tests"}
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+

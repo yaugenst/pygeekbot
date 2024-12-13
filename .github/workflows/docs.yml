@@ -1,0 +1,55 @@
+name: documentation
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and Deploy Docs 📚
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Setup Git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Install dependencies
+        run: |
+          uv sync --group docs
+
+      - name: Build and deploy documentation
+        run: |
+          if [[ $GITHUB_REF == refs/heads/develop ]]; then
+            uv run mike deploy nightly --push
+          elif [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+            uv run mike deploy --push --update-aliases "$VERSION" latest
+            if [[ $(git tag -l | sort -V | tail -n1) == "$VERSION" ]]; then
+              uv run mike set-default --push latest
+            fi
+          fi
